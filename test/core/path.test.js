@@ -1,4 +1,4 @@
-module.exports = function(ro) {
+function testPath(ro) {
     console.log('\n[Test] ro.path Functions');
 
     // 1. ro.path.isValid Test
@@ -35,4 +35,6 @@ module.exports = function(ro) {
         }
     });
     console.log('✅ ro.path.isValid passed');
-};
+}
+
+if (typeof module !== 'undefined') module.exports = testPath;

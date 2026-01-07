@@ -1,4 +1,4 @@
-module.exports = function(ro) {
+function testList(ro) {
     console.log('\n[Test] ro.list Functions');
 
     // 1. ro.list.toMap Test
@@ -47,4 +47,6 @@ module.exports = function(ro) {
     }
 
     console.log('✅ ro.list.toMap passed');
-};
+}
+
+if (typeof module !== 'undefined') module.exports = testList;

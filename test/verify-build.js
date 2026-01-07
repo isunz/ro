@@ -1,5 +1,10 @@
 // 주의: src가 아니라 빌드된 결과물을 가져옵니다.
-const ro = require('../dist/ro.js');
+const roModule = require('../dist/ro.js');
+
+// Handle CommonJS export structure change due to 'exports: named'
+// If roModule has a 'default' property, use it as the main 'ro' object.
+// Otherwise, assume roModule itself is the object (legacy behavior).
+const ro = roModule.default || roModule;
 
 // 테스트 모듈 로드
 const testExtend = require('./core/extend.test');

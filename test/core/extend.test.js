@@ -1,4 +1,4 @@
-module.exports = function(ro) {
+function testExtend(ro) {
     console.log('\n[Test] Extend Function');
     const obj1 = { a: 1, ab: { abo: function () {}, abb: {} } };
     const obj2 = { b: 2, ab: { abo: function () { console.log('abo'); }, abb: 'string abb'} };
@@ -12,4 +12,6 @@ module.exports = function(ro) {
         console.error('❌ FAIL: Extend logic error.');
         throw new Error('Extend test failed');
     }
-};
+}
+
+if (typeof module !== 'undefined') module.exports = testExtend;

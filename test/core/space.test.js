@@ -1,4 +1,4 @@
-module.exports = function(ro) {
+function testSpace(ro) {
     console.log('\n[Test] ro.space Functions');
 
     // Clear storage before test
@@ -64,4 +64,6 @@ module.exports = function(ro) {
     }
 
     console.log('✅ ro.space passed');
-};
+}
+
+if (typeof module !== 'undefined') module.exports = testSpace;

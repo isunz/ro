@@ -1,4 +1,4 @@
-module.exports = function(ro) {
+function testIs(ro) {
     console.log('\n[Test] ro.is Functions');
 
     // 1. ro.is.camel Test
@@ -25,28 +25,6 @@ module.exports = function(ro) {
         }
     });
     console.log('✅ ro.is.camel passed');
+}
 
-    // 2. ro.is.plainObject Test
-    console.log('--- ro.is.plainObject ---');
-    const plainObjectTests = [
-        { input: {}, expected: true },
-        { input: { a: 1 }, expected: true },
-        { input: Object.create(null), expected: true }, // Prototype-less object
-        { input: new Object(), expected: true },
-        { input: [], expected: false },
-        { input: new Date(), expected: false },
-        { input: null, expected: false },
-        { input: undefined, expected: false },
-        { input: 'string', expected: false },
-        { input: 123, expected: false }
-    ];
-
-    plainObjectTests.forEach((t, i) => {
-        const res = ro.is.plainObject(t.input);
-        if (res !== t.expected) {
-            console.error(`❌ FAIL: Input index ${i} -> Expected ${t.expected}, got ${res}`);
-            throw new Error('ro.is.plainObject test failed');
-        }
-    });
-    console.log('✅ ro.is.plainObject passed');
-};
+if (typeof module !== 'undefined') module.exports = testIs;

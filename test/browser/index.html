@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RoJS Browser Test</title>
+    <style>
+        body { font-family: sans-serif; padding: 20px; }
+        .status { padding: 10px; margin-bottom: 10px; border-radius: 4px; font-weight: bold; }
+        .success { background-color: #d4edda; color: #155724; }
+        .error { background-color: #f8d7da; color: #721c24; }
+        #log { background: #f8f9fa; padding: 10px; border: 1px solid #ddd; white-space: pre-wrap; font-family: monospace; }
+        .log-error { color: #dc3545; }
+    </style>
+</head>
+<body>
+    <h1>RoJS Browser Test</h1>
+    <div id="status" class="status">Running tests...</div>
+    <div id="log"></div>
+
+    <!-- 1. Load Library -->
+    <script src="../../dist/ro.min.js"></script>
+
+    <!-- 2. Load Test Cases (Global Functions) -->
+    <script src="../core/extend.test.js"></script>
+    <script src="../core/plugin.test.js"></script>
+    <script src="../core/str.test.js"></script>
+    <script src="../core/is.test.js"></script>
+    <script src="../core/obj.test.js"></script>
+    <script src="../core/list.test.js"></script>
+    <script src="../core/space.test.js"></script>
+    <script src="../core/path.test.js"></script>
+    <script src="../core/hasOwn.test.js"></script>
+
+    <!-- 3. Run Tests -->
+    <script>
+        const logEl = document.getElementById('log');
+        const statusEl = document.getElementById('status');
+        let hasCriticalError = false;
+
+        // Override console.log/error to display on screen
+        const originalLog = console.log;
+        const originalError = console.error;
+
+        console.log = function(...args) {
+            originalLog.apply(console, args);
+            const span = document.createElement('span');
+            span.textContent = args.join(' ') + '\n';
+            logEl.appendChild(span);
+        };
+
+        console.error = function(...args) {
+            originalError.apply(console, args);
+            const span = document.createElement('span');
+            span.className = 'log-error';
+            span.textContent = '[LOG] ' + args.join(' ') + '\n';
+            logEl.appendChild(span);
+
+            // Note: We do NOT set hasCriticalError = true here because
+            // some tests intentionally trigger console.error to verify error handling.
+        };
+
+        try {
+            if (typeof ro === 'undefined') {
+                throw new Error('ro library not loaded!');
+            }
+
+            console.log('--- Browser Test Start ---');
+            console.log('ro version loaded:', ro);
+
+            // Run all test functions loaded from script files
+            // If any of these throw an Error, it will be caught by the catch block below.
+            testExtend(ro);
+            testPlugin(ro);
+            testStr(ro);
+            testIs(ro);
+            testObj(ro);
+            testList(ro);
+            testSpace(ro);
+            testPath(ro);
+            testHasOwn(ro);
+
+            console.log('\n✅ ALL TESTS PASSED');
+
+            statusEl.className = 'status success';
+            statusEl.textContent = 'All Tests Passed!';
+
+        } catch (e) {
+            hasCriticalError = true;
+            console.error('CRITICAL ERROR:', e);
+            statusEl.className = 'status error';
+            statusEl.textContent = 'Tests Failed: ' + e.message;
+        }
+    </script>
+</body>
+</html>

@@ -1,4 +1,4 @@
-module.exports = function(ro) {
+function testObj(ro) {
     console.log('\n[Test] ro.obj Functions');
 
     // 1. ro.obj.get Test
@@ -41,4 +41,6 @@ module.exports = function(ro) {
         }
     });
     console.log('✅ ro.obj.get passed');
-};
+}
+
+if (typeof module !== 'undefined') module.exports = testObj;

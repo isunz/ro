@@ -1,4 +1,4 @@
-module.exports = function(ro) {
+function testStr(ro) {
     console.log('\n[Test] ro.str Functions');
 
     // 1. ro.str.camel Test
@@ -72,4 +72,6 @@ module.exports = function(ro) {
         }
     });
     console.log('✅ ro.str.snake passed');
-};
+}
+
+if (typeof module !== 'undefined') module.exports = testStr;

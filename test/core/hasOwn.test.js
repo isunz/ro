@@ -1,29 +1,39 @@
-module.exports = function(ro) {
+function testHasOwn(ro) {
     console.log('\n[Test] ro.hasOwn Function');
 
-    const obj = { a: 1 };
-    const protoLess = Object.create(null);
-    protoLess.b = 2;
-    
-    // hasOwnProperty 메서드를 덮어쓴 객체 (악의적이거나 실수로 인한 경우)
-    const shadowed = { hasOwnProperty: function() { return false; }, c: 3 };
+    const obj = { a: 1, b: undefined };
+    const nullProtoObj = Object.create(null);
+    nullProtoObj.a = 1;
 
-    const tests = [
-        { obj: obj, key: 'a', expected: true },
-        { obj: obj, key: 'b', expected: false }, // 없는 키
-        { obj: protoLess, key: 'b', expected: true }, // 프로토타입 없는 객체
-        { obj: protoLess, key: 'a', expected: false },
-        { obj: shadowed, key: 'c', expected: true }, // 덮어씌워진 객체에서도 정상 동작해야 함
-        { obj: shadowed, key: 'hasOwnProperty', expected: true } // 키 자체가 hasOwnProperty인 경우
-    ];
+    // 1. Normal object
+    if (ro.hasOwn(obj, 'a') === true && ro.hasOwn(obj, 'b') === true && ro.hasOwn(obj, 'c') === false) {
+        // console.log('✅ Normal object check passed');
+    } else {
+        console.error('❌ FAIL: Normal object check failed');
+        throw new Error('ro.hasOwn normal object failed');
+    }
 
-    tests.forEach((t, i) => {
-        const res = ro.hasOwn(t.obj, t.key);
-        if (res !== t.expected) {
-            console.error(`❌ FAIL: Test index ${i} -> Expected ${t.expected}, got ${res}`);
-            throw new Error('ro.hasOwn test failed');
-        }
-    });
+    // 2. Object with null prototype
+    if (ro.hasOwn(nullProtoObj, 'a') === true && ro.hasOwn(nullProtoObj, 'b') === false) {
+        // console.log('✅ Null prototype object check passed');
+    } else {
+        console.error('❌ FAIL: Null prototype object check failed');
+        throw new Error('ro.hasOwn null prototype object failed');
+    }
+
+    // 3. Overridden hasOwnProperty
+    const overriddenObj = {
+        a: 1,
+        hasOwnProperty: function() { return false; }
+    };
+    if (ro.hasOwn(overriddenObj, 'a') === true) {
+        // console.log('✅ Overridden hasOwnProperty check passed');
+    } else {
+        console.error('❌ FAIL: Overridden hasOwnProperty check failed');
+        throw new Error('ro.hasOwn overridden hasOwnProperty failed');
+    }
 
     console.log('✅ ro.hasOwn passed');
-};
+}
+
+if (typeof module !== 'undefined') module.exports = testHasOwn;

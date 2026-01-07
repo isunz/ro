@@ -1,4 +1,4 @@
-module.exports = function(ro) {
+function testPlugin(ro) {
     console.log('\n[Test] Plugin System');
     
     // 1. Function Type Plugin Test
@@ -112,4 +112,6 @@ module.exports = function(ro) {
         console.error('❌ FAIL: Name validation logic is incorrect.');
         throw new Error('Name validation test failed');
     }
-};
+}
+
+if (typeof module !== 'undefined') module.exports = testPlugin;
