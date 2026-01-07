@@ -1,0 +1,21 @@
+{
+  "name": "@mars-/ro",
+  "version": "1.0.0",
+  "publishConfig": {
+    "access": "public"
+  },
+  "main": "dist/ro.js",
+  "scripts": {
+    "build": "rollup -c rollup.config.mjs && node test/verify-build.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "Robust JavaScript Utility Library with safety features",
+  "devDependencies": {
+    "@rollup/plugin-commonjs": "^28.0.2",
+    "@rollup/plugin-node-resolve": "^16.0.0",
+    "@rollup/plugin-terser": "^0.4.4",
+    "rollup": "^4.55.1"
+  }
+}
