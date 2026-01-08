@@ -22,57 +22,70 @@ const ro = require('@mars-/ro');
 ### Core Utilities
 
 #### `ro.extend(deep, target, ...sources)`
-객체를 병합합니다. `deep` 옵션을 `true`로 주면 깊은 복사를 수행합니다. 프로토타입 오염 방지 및 순환 참조 방지 로직이 포함되어 있습니다.
+객체를 병합합니다. `deep` 옵션을 `true`로 주면 깊은 복사를 수행합니다.
 
 ```javascript
 ro.extend(true, {}, obj1, obj2);
 ```
 
 #### `ro.hasOwn(obj, key)`
-객체가 특정 프로퍼티를 직접 소유하고 있는지 안전하게 확인합니다. `Object.create(null)`로 생성된 객체나 `hasOwnProperty`가 오버라이딩된 객체에서도 안전하게 동작합니다.
+객체가 특정 프로퍼티를 직접 소유하고 있는지 안전하게 확인합니다.
 
 ```javascript
 ro.hasOwn({ a: 1 }, 'a'); // true
 ```
 
-### Plugin System (`ro.plugin`)
+### Plugin System (`ro.use`)
 
-#### `ro.plugin.add(name, definition)`
-라이브러리 기능을 런타임에 확장합니다.
+라이브러리 기능을 런타임에 확장합니다. Vue.js 플러그인 시스템과 유사한 `ro.use`를 사용합니다.
+
+#### 1. `install` 메서드가 있는 객체
+가장 권장되는 방식입니다. 초기화 로직을 명확히 분리할 수 있습니다.
 
 ```javascript
-ro.plugin.add('myPlugin', {
-    version: '1.0.0',
-    body: function(args, context) {
-        // context === ro
-        return 'Hello ' + args.name;
+const myPlugin = {
+    install(ro, options) {
+        // ro 객체에 기능 추가
+        ro.myFeature = function() { console.log('Feature Added'); };
     }
+};
+
+ro.use(myPlugin, { someOption: true });
+```
+
+#### 2. 함수형 플러그인
+간단한 플러그인은 함수 하나로 정의할 수 있습니다.
+
+```javascript
+function myPlugin(ro, options) {
+    ro.simpleFeature = 'Simple';
+}
+
+ro.use(myPlugin);
+```
+
+#### 3. 자동 등록 객체 (name + body)
+기존 `add` 방식과 유사하게 이름과 본체를 지정하여 바로 등록합니다.
+
+```javascript
+ro.use({
+    name: 'myCalc',
+    body: function(a, b) { return a + b; }
 });
+
+ro.myCalc(1, 2); // 3
 ```
 
 ### String Utilities (`ro.str`)
 
-#### `ro.str.camel(text)`
-문자열을 카멜 케이스로 변환합니다. (`foo-bar` -> `fooBar`)
-
-#### `ro.str.kebab(text)`
-문자열을 케밥 케이스로 변환합니다. (`fooBar` -> `foo-bar`)
-
-#### `ro.str.snake(text, upper?)`
-문자열을 스네이크 케이스로 변환합니다. (`fooBar` -> `FOO_BAR`)
+*   **`ro.str.camel(text)`**: `foo-bar` -> `fooBar`
+*   **`ro.str.kebab(text)`**: `fooBar` -> `foo-bar`
+*   **`ro.str.snake(text, upper?)`**: `fooBar` -> `FOO_BAR`
 
 ### Check Utilities (`ro.is`)
 
-#### `ro.is.camel(text)`
-문자열이 카멜 케이스인지 확인합니다.
-
-#### `ro.is.plainObject(obj)`
-값이 순수 객체(Plain Object)인지 확인합니다.
-
-```javascript
-ro.is.plainObject({}); // true
-ro.is.plainObject(new Date()); // false
-```
+*   **`ro.is.camel(text)`**: 카멜 케이스 여부 확인.
+*   **`ro.is.plainObject(obj)`**: 순수 객체 여부 확인.
 
 ### Object Utilities (`ro.obj`)
 
@@ -97,13 +110,8 @@ ro.list.toMap(users, 'id');
 안전하게 중첩된 객체 공간을 생성하거나 값을 설정/조회합니다.
 
 ```javascript
-// 네임스페이스 생성
-ro.space.ns('app.ui.theme');
-
-// 값 설정 (기존 값 덮어쓰기 방지 옵션 제공)
-ro.space.set('app.config.version', '1.0.0', { override: false });
-
-// 값 조회
+ro.space.ns('app.ui');
+ro.space.set('app.config.version', '1.0.0');
 ro.space.get('app.config.version');
 ```
 
@@ -114,5 +122,4 @@ ro.space.get('app.config.version');
 
 ```javascript
 ro.path.isValid('a/b/c'); // true
-ro.path.isValid('a.b.c', '.'); // true
 ```

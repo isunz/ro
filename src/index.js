@@ -42,5 +42,9 @@ const ro = {
 
 // Bind plugin methods to ro instance so 'this' refers to 'ro'
 ro.plugin.add = ro.plugin.add.bind(ro);
+ro.plugin.use = ro.plugin.use.bind(ro);
+
+// Main Plugin API: ro.use
+ro.use = ro.plugin.use;
 
 export default ro;

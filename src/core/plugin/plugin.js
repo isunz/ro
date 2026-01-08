@@ -51,7 +51,48 @@ export default {
             this[name] = pluginDef.body;
         }
     },
-    
+    /**
+     * [New] 스마트 플러그인 설치 함수
+     * @param {Object|Function} plugin - 플러그인 정의 객체 또는 함수
+     * @param {*} [options] - 옵션
+     */
+    use: function(plugin, options) {
+        if (!plugin) {
+            return this;
+        }
+
+        // 1. If plugin has an 'install' method, call it
+        if (typeof plugin.install === 'function') {
+            plugin.install(this, options);
+        }
+        // 2. If plugin is a function (and no install method used above), call it
+        else if (typeof plugin === 'function') {
+            plugin(this, options);
+        }
+
+        // 3. Auto-register functionality (like 'add')
+        // If the plugin object has 'name' and 'body', register it directly to 'ro'
+        if (typeof plugin === 'object' && plugin !== null && plugin.name && plugin.body) {
+            // Validate name
+            if (!isCamel(plugin.name)) {
+                console.error(`[ro.use] Invalid plugin name '${plugin.name}'. It must be in camelCase.`);
+                return this;
+            }
+
+            if (typeof plugin.body === 'function') {
+                this[plugin.name] = function(...args) {
+                    return plugin.body.apply(this, [...args, this]);
+                };
+            } else {
+                this[plugin.name] = plugin.body;
+            }
+            
+            // Store metadata if needed
+            plugins[plugin.name] = plugin;
+        }
+
+        return this; // Support chaining
+    },
     // Accessor to get raw plugin info
     get: function(name) {
         return plugins[name];

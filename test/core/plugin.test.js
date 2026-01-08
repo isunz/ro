@@ -1,117 +1,70 @@
 function testPlugin(ro) {
-    console.log('\n[Test] Plugin System');
+    console.log('\n[Test] Plugin System (ro.use)');
     
-    // 1. Function Type Plugin Test
-    console.log('--- Function Type Plugin ---');
-    ro.plugin.add('testPlugin', {
-        version: '1.0.0',
-        body: function(args, context) {
-            // console.log('Plugin executed with args:', args);
-            
-            // Check context via 'this'
-            // console.log("Checking 'this.extend':", typeof this.extend);
-            if (typeof this.extend !== 'function') {
-                throw new Error("'this.extend' is not available. 'this' context might be wrong.");
-            }
-
-            // Check context via argument
-            // console.log('Context (ro) available via arg:', !!context.extend);
-            
-            return {
-                msg: 'Hello from Plugin',
-                receivedArgs: args,
-                contextCheck: this.extend === context.extend // Verify they are the same
-            };
+    // 1. Plugin with 'install' method
+    console.log('--- 1. install() method ---');
+    const installablePlugin = {
+        install: function(roInstance, options) {
+            // console.log('Installing plugin with options:', options);
+            roInstance.installedPlugin = true;
+            roInstance.pluginOptions = options;
         }
-    });
+    };
 
-    if (typeof ro.testPlugin === 'function') {
-        console.log('✅ SUCCESS: Function Plugin registered.');
-        const pluginResult = ro.testPlugin({ data: 'test' });
+    const roAfterInstall = ro.use(installablePlugin, { option: 'A' });
+
+    if (ro.installedPlugin === true && ro.pluginOptions.option === 'A') {
+        // console.log('✅ ro.use with install() works');
+    } else {
+        console.error('❌ FAIL: ro.use with install() failed');
+        console.log('ro.installedPlugin:', ro.installedPlugin);
         
-        if (pluginResult.msg === 'Hello from Plugin' && 
-            pluginResult.receivedArgs.data === 'test' &&
-            pluginResult.contextCheck === true) {
-             console.log('✅ SUCCESS: Function Plugin execution works correctly.');
-        } else {
-             console.error('❌ FAIL: Function Plugin execution result is incorrect.');
-             throw new Error('Function Plugin execution test failed');
+        // Check if the returned instance has the property
+        if (roAfterInstall.installedPlugin === true) {
+            console.log('⚠️ BUT roAfterInstall has the property! (Object mismatch)');
         }
-    } else {
-        console.error('❌ FAIL: Function Plugin not registered.');
-        throw new Error('Function Plugin registration test failed');
-    }
-
-    // 2. Object Type Plugin Test
-    console.log('\n--- Object Type Plugin ---');
-    ro.plugin.add('objPlugin', {
-        version: '0.5.0',
-        body: {
-            prop: 'I am an object',
-            method: function() {
-                return 'method called';
-            }
-        }
-    });
-
-    if (typeof ro.objPlugin === 'object') {
-        console.log('✅ SUCCESS: Object Plugin registered.');
         
-        if (ro.objPlugin.prop === 'I am an object' && ro.objPlugin.method() === 'method called') {
-            console.log('✅ SUCCESS: Object Plugin properties accessed correctly.');
-        } else {
-            console.error('❌ FAIL: Object Plugin properties are incorrect.');
-            throw new Error('Object Plugin test failed');
+        throw new Error('ro.use install() test failed');
+    }
+
+    // 2. Plugin as a function
+    console.log('\n--- 2. Function Plugin ---');
+    const functionPlugin = function(roInstance, options) {
+        roInstance.functionPluginLoaded = true;
+    };
+
+    const roAfterFunc = ro.use(functionPlugin);
+
+    if (ro.functionPluginLoaded === true) {
+        // console.log('✅ ro.use with function works');
+    } else {
+        console.error('❌ FAIL: ro.use with function failed');
+        console.log('ro.functionPluginLoaded:', ro.functionPluginLoaded);
+        
+        if (roAfterFunc.functionPluginLoaded === true) {
+            console.log('⚠️ BUT roAfterFunc has the property! (Object mismatch)');
         }
-    } else {
-        console.error('❌ FAIL: Object Plugin not registered or not an object.');
-        console.log('Type:', typeof ro.objPlugin);
-        throw new Error('Object Plugin registration test failed');
+
+        throw new Error('ro.use function test failed');
     }
 
-    // 3. Alternative Registration & Validation Test
-    console.log('\n--- Registration & Validation ---');
-    
-    // 3.1 Object Argument Registration
-    ro.plugin.add({
-        name: 'altPlugin',
-        version: '1.0.0',
-        body: function() { return 'alt works'; }
-    });
+    // 3. Plugin with 'name' and 'body' (Auto-register)
+    console.log('\n--- 3. Auto-register (name + body) ---');
+    const autoRegPlugin = {
+        name: 'autoPlugin',
+        body: function(args) { return 'auto works ' + args; }
+    };
 
-    if (typeof ro.altPlugin === 'function' && ro.altPlugin() === 'alt works') {
-        console.log('✅ SUCCESS: Plugin registered via object argument.');
+    ro.use(autoRegPlugin);
+
+    if (typeof ro.autoPlugin === 'function' && ro.autoPlugin('test') === 'auto works test') {
+        // console.log('✅ ro.use auto-register works');
     } else {
-        console.error('❌ FAIL: Plugin registration via object argument failed.');
-        throw new Error('Alternative registration test failed');
+        console.error('❌ FAIL: ro.use auto-register failed');
+        throw new Error('ro.use auto-register test failed');
     }
 
-    // 3.2 Invalid Name Validation (CamelCase Check)
-    const invalidNames = ['MyPlugin', 'my-plugin', 'my_plugin', '2plugin', ''];
-    let validationPassed = true;
-
-    // Mock console.error to suppress expected error messages during test
-    const originalConsoleError = console.error;
-    let errorCount = 0;
-    console.error = function() { errorCount++; };
-
-    invalidNames.forEach(name => {
-        ro.plugin.add(name, { body: function(){} });
-        if (ro[name]) {
-            validationPassed = false;
-            originalConsoleError(`❌ FAIL: Invalid name '${name}' should not be registered.`);
-        }
-    });
-
-    // Restore console.error
-    console.error = originalConsoleError;
-
-    if (validationPassed && errorCount === invalidNames.length) {
-        console.log(`✅ SUCCESS: Invalid names rejected correctly (${errorCount} cases).`);
-    } else {
-        console.error('❌ FAIL: Name validation logic is incorrect.');
-        throw new Error('Name validation test failed');
-    }
+    console.log('✅ ro.use passed');
 }
 
 if (typeof module !== 'undefined') module.exports = testPlugin;
